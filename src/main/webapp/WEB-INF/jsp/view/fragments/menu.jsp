@@ -76,6 +76,10 @@
 
 			</f:form></li>
 
+		<li class="nav-item">
+			<a href="${pageContext.request.contextPath}/admin/inscription">Inscription</a>
+		</li>
+
 	</ul>
 
 

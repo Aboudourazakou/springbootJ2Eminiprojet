@@ -124,7 +124,7 @@ public class AppConfig implements WebMvcConfigurer {
 
 		DataSourceBuilder dataSourceBuilder = DataSourceBuilder.create();
 		dataSourceBuilder.driverClassName("org.mariadb.jdbc.Driver");
-		dataSourceBuilder.url("jdbc:mysql://localhost:3306/gs_notes_database");
+		dataSourceBuilder.url("jdbc:mysql://localhost:3306/miniprojetj2e");
 		dataSourceBuilder.username("root");
 		dataSourceBuilder.password("");
 		return dataSourceBuilder.build();
