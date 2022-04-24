@@ -9,10 +9,13 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.annotation.MultipartConfig;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -36,7 +39,7 @@ public class ExcellImporter {
         return  false;
     }
 
-    public  void excellFileDataPreprocessing(EtudiantServiceImpl etudiantServiceImpl,InputStream is){
+    public  void excellFileDataPreprocessing(EtudiantServiceImpl etudiantServiceImpl, InputStream is, HttpSession session){
 
         List<ExcellFileRowObject> excellFileRowObjectsNotExistsInDatabase=new ArrayList<>();
         List<ExcellFileRowObject> excellFileRowObjectsExistsInDatabaseWithErrors=new ArrayList<>();
@@ -113,6 +116,7 @@ public class ExcellImporter {
                 if(etudiantServiceImpl.findIfEtudiantExists(id)){
                     Etudiant etudiant=etudiantServiceImpl.getEtudiant(id);
 
+
                     if(!checkReInscriptionValidity(excellFileRowObject)){
                         System.out.println("Le type d'inscription de M."+excellFileRowObject.getNom()+"" +
                                 " existant dans la base est  "+excellFileRowObject.getType()+" Ce qui ne convient pas");
@@ -142,14 +146,13 @@ public class ExcellImporter {
                 rowNumber++;
 
             }
-            System.out.println("Etudiant dejas inscrits\n\n");
-            System.out.println(alreadyRegisteredStudents);
-            System.out.println("Etudiants pas encore inscrits\n\n");
-            System.out.println(excellFileRowObjectsNotExistsInDatabase);
-            System.out.println("Etudiants deja inscrits avec erreur\n\n");
-            System.out.println(alreadyRegisteredStudentsWithErrors);
-            System.out.println("Son fichier excell est");
-            System.out.println(excellFileRowObjectsExistsInDatabaseWithErrors);
+
+
+            session.setAttribute("dejaInscrits",alreadyRegisteredStudents);
+            session.setAttribute("pasInscrits",excellFileRowObjectsNotExistsInDatabase);
+            session.setAttribute("badInfos",alreadyRegisteredStudentsWithErrors);
+            session.setAttribute("badInfoExcell",excellFileRowObjectsExistsInDatabaseWithErrors);
+
             workbook.close();
 
         } catch (IOException e) {

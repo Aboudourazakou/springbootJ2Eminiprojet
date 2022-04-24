@@ -20,4 +20,9 @@ public class EtudiantServiceImpl  implements EtudiantService {
     public  Etudiant getEtudiant(Long id){
         return  etudiantDao.getById(id);
     }
+
+    public  void updateEtudiantNomPrenomCne(Etudiant etudiant){
+        etudiantDao.save(etudiant);
+
+    }
 }
