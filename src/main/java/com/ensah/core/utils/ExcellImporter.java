@@ -15,15 +15,13 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.annotation.MultipartConfig;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 @MultipartConfig
 public class ExcellImporter {
 
 
-    static String[] HEADERs = {"ID ETUDIANT", "CNE", "NOM", "PRENOM","ID NIVEAU ACTUEL","Type"};
+    static String[] HEADERS = {"ID ETUDIANT","CNE", "NOM", "PRENOM","ID NIVEAU ACTUEL","TYPE"};
     static String SHEET = "etudiants";
     public static String TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
@@ -50,23 +48,39 @@ public class ExcellImporter {
             Workbook workbook = new XSSFWorkbook(is);
             Sheet sheet = workbook.getSheet(SHEET);
             Iterator<Row> rows = sheet.iterator();
-            List<InscriptionAnnuelle> inscriptionAnnuelles = new ArrayList<InscriptionAnnuelle>();
 
-            int rowNumber = 0;
+
+            int rowNumber = 0;//Ligne 0 correspond aux headers
             while (rows.hasNext()) {
                 Row currentRow = rows.next();
 
                 Iterator<Cell> cellsInRow = currentRow.iterator();
-
-                System.out.println(rowNumber+"row");
+                String []excelHeaders=new String[7];
                 if(rowNumber==0){
                     rowNumber++;
+                    int i=0;
                     while (cellsInRow.hasNext()){
                         Cell currentCell=cellsInRow.next();
-                        System.out.println(currentCell.getStringCellValue());
+                        excelHeaders[i]=currentCell.getStringCellValue();
+                        i++;
                     }
+                    System.out.println(Arrays.asList(excelHeaders));
+                    System.out.println(Arrays.asList(HEADERS));
 
-                    continue;
+                   if(i==6){//Si le nombre de colonnes est convenable
+                       if(checkFileHeaders(HEADERS,excelHeaders)){//Si les ententes sont les memes
+                       continue;
+                       }
+                       else {
+                           System.out.println("Entetes differentes");
+                           break;
+                       }
+                   }
+                   else{
+                       System.out.println("Le nombre de colonnes n'est pas convenable");
+                       break;
+                   }
+
                 }
                 int cellX=0;
                 long id=0,id_niveau=0;
@@ -97,7 +111,13 @@ public class ExcellImporter {
                  ExcellFileRowObject excellFileRowObject=new ExcellFileRowObject(cne,nom,prenom,type,id_niveau,id);
 
                 if(etudiantServiceImpl.findIfEtudiantExists(id)){
-                    Etudiant etudiant=new Etudiant();
+                    Etudiant etudiant=etudiantServiceImpl.getEtudiant(id);
+
+                    if(!checkReInscriptionValidity(excellFileRowObject)){
+                        System.out.println("Le type d'inscription de M."+excellFileRowObject.getNom()+"" +
+                                " existant dans la base est  "+excellFileRowObject.getType()+" Ce qui ne convient pas");
+                        break;
+                    }
                     if(!excellFileRowObject.getCne().equals(etudiant.getCne()) ||
                             !excellFileRowObject.getNom().equals(etudiant.getNom()) ||
                             !excellFileRowObject.getPrenom().equals(etudiant.getPrenom())){
@@ -112,6 +132,11 @@ public class ExcellImporter {
                 }
                 else{
                     excellFileRowObjectsNotExistsInDatabase.add(excellFileRowObject);
+                    if(!checkInscriptionValidity(excellFileRowObject)){
+                        System.out.println("Le type d'inscription de M."+excellFileRowObject.getNom()+"" +
+                                " "+excellFileRowObject.getType()+" Ce qui ne convient pas");
+                        break;
+                    }
                 }
 
                 rowNumber++;
@@ -132,5 +157,33 @@ public class ExcellImporter {
         }
 
     }
+
+
+    public  boolean checkFileHeaders(String [] headers,String[] excelHeaders){
+        boolean correct=true;
+        for(int i=0;i<6;i++){
+            if(!headers[i].equals(excelHeaders[i])){
+                return  false;
+            }
+        }
+        return  correct;
+    }
+
+    public  boolean checkReInscriptionValidity(ExcellFileRowObject row){
+             String type=row.getType();
+             type=type.toLowerCase();
+        return type.equals("reinscription");
+
+    }
+
+    public  boolean checkInscriptionValidity(ExcellFileRowObject row){
+
+        String type=row.getType();
+        type=type.toLowerCase();
+        return type.equals("inscription");
+
+    }
+
+    public  boolean checkNiveauConvenable(){ return  true;}
 
 }

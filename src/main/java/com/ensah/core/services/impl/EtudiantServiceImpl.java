@@ -11,11 +11,10 @@ public class EtudiantServiceImpl  implements EtudiantService {
 
     @Autowired
     EtudiantDao etudiantDao;
-     public EtudiantServiceImpl(){
-         System.out.println("Je suis la");
-     }
+
     @Override
     public boolean findIfEtudiantExists(Long id) {
+
         return  etudiantDao.existsById(id);
     }
     public  Etudiant getEtudiant(Long id){
