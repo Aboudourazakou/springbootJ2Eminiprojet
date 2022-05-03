@@ -3,11 +3,7 @@ package com.ensah.core.bo;
 
 import java.util.*;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-
-import javax.persistence.OneToMany;
-import javax.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.*;
 
 
 /**
@@ -27,7 +23,19 @@ public class Etudiant extends Utilisateur {
 
 	private Date dateNaissance;
 
-	@OneToMany(mappedBy = "etudiant", cascade = CascadeType.ALL , targetEntity = InscriptionAnnuelle.class)
+
+	@Transient
+	Long idNiveauTemporaire;
+
+	public Long getIdNiveauTemporaire() {
+		return idNiveauTemporaire;
+	}
+
+	public void setIdNiveauTemporaire(Long idNiveauTemporaire) {
+		this.idNiveauTemporaire = idNiveauTemporaire;
+	}
+
+	@OneToMany(mappedBy = "etudiant", cascade = CascadeType.ALL , targetEntity = InscriptionAnnuelle.class, fetch = FetchType.EAGER)
 	private List<InscriptionAnnuelle> inscriptions;
 
 
@@ -57,6 +65,7 @@ public class Etudiant extends Utilisateur {
 
 	@Override
 	public String toString() {
+		System.out.println(super.toString());
 		return "Etudiant [cne=" + cne + ", dateNaissance=" + dateNaissance + ", inscriptions=" + inscriptions + "]";
 	}
 

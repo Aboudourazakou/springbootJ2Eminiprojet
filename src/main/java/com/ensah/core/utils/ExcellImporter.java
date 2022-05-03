@@ -1,18 +1,15 @@
 package com.ensah.core.utils;
 
 import com.ensah.core.bo.Etudiant;
-import com.ensah.core.bo.InscriptionAnnuelle;
-import com.ensah.core.services.EtudiantService;
+import com.ensah.core.dao.NiveauDao;
+import com.ensah.core.services.NiveauService;
 import com.ensah.core.services.impl.EtudiantServiceImpl;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.hibernate.Session;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpSession;
@@ -23,7 +20,7 @@ import java.util.*;
 @MultipartConfig
 public class ExcellImporter {
 
-
+    boolean errorOccured=false;
     static String[] HEADERS = {"ID ETUDIANT","CNE", "NOM", "PRENOM","ID NIVEAU ACTUEL","TYPE"};
     static String SHEET = "etudiants";
     public static String TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
@@ -39,12 +36,14 @@ public class ExcellImporter {
         return  false;
     }
 
-    public  void excellFileDataPreprocessing(EtudiantServiceImpl etudiantServiceImpl, InputStream is, HttpSession session){
+    public  void excellFileDataPreprocessing(EtudiantServiceImpl etudiantServiceImpl, InputStream is, HttpSession session, NiveauService niveauService){
 
         List<ExcellFileRowObject> excellFileRowObjectsNotExistsInDatabase=new ArrayList<>();
         List<ExcellFileRowObject> excellFileRowObjectsExistsInDatabaseWithErrors=new ArrayList<>();
+        List<ExcellFileRowObject> excellFileRowObjectsExistsWithoutErrors=new ArrayList<>();
         List<Etudiant>alreadyRegisteredStudents=new ArrayList<>();
         List <Etudiant>alreadyRegisteredStudentsWithErrors=new ArrayList<>();
+        cleanSessions(session);
 
 
         try {
@@ -67,24 +66,26 @@ public class ExcellImporter {
                         excelHeaders[i]=currentCell.getStringCellValue();
                         i++;
                     }
-                    System.out.println(Arrays.asList(excelHeaders));
-                    System.out.println(Arrays.asList(HEADERS));
 
+                    System.out.println("Occured 1 "+errorOccured);
                    if(i==6){//Si le nombre de colonnes est convenable
                        if(checkFileHeaders(HEADERS,excelHeaders)){//Si les ententes sont les memes
                        continue;
                        }
                        else {
                            System.out.println("Entetes differentes");
+                           errorOccured=true;
                            break;
                        }
                    }
                    else{
                        System.out.println("Le nombre de colonnes n'est pas convenable");
+                       errorOccured=true;
                        break;
                    }
 
                 }
+
                 int cellX=0;
                 long id=0,id_niveau=0;
                 String nom="",prenom="",cne="",type="";
@@ -112,9 +113,25 @@ public class ExcellImporter {
 
 
                  ExcellFileRowObject excellFileRowObject=new ExcellFileRowObject(cne,nom,prenom,type,id_niveau,id);
+                errorOccured=niveauService.findIfNiveauExists(excellFileRowObject.getId_niveau());
 
+                if(errorOccured){
+                    System.out.println("Le niveau pour l'etudiant " + excellFileRowObject.getNom() + " est " + excellFileRowObject.getId_niveau() +
+                            " Ce niveau n'exite pas");
+                    break;
+                };//Si le niveau n'est pas convenable,on arrete
+                System.out.println("Occured 3 "+errorOccured);
                 if(etudiantServiceImpl.findIfEtudiantExists(id)){
                     Etudiant etudiant=etudiantServiceImpl.getEtudiant(id);
+                    System.out.println(id+" est l'id temporaire");
+                    etudiant.setIdNiveauTemporaire(id_niveau);
+
+
+                    errorOccured=  niveauService.validerNiveau(etudiant,excellFileRowObject.getId_niveau());
+                    if(errorOccured){
+
+                        break;
+                    }
 
 
                     if(!checkReInscriptionValidity(excellFileRowObject)){
@@ -131,6 +148,7 @@ public class ExcellImporter {
                     }
 
                     else{
+                        excellFileRowObjectsExistsWithoutErrors.add(excellFileRowObject);
                         alreadyRegisteredStudents.add(etudiant);
                     }
                 }
@@ -139,6 +157,7 @@ public class ExcellImporter {
                     if(!checkInscriptionValidity(excellFileRowObject)){
                         System.out.println("Le type d'inscription de M."+excellFileRowObject.getNom()+"" +
                                 " "+excellFileRowObject.getType()+" Ce qui ne convient pas");
+                        errorOccured=true;
                         break;
                     }
                 }
@@ -148,11 +167,21 @@ public class ExcellImporter {
             }
 
 
-            session.setAttribute("dejaInscrits",alreadyRegisteredStudents);
-            session.setAttribute("pasInscrits",excellFileRowObjectsNotExistsInDatabase);
-            session.setAttribute("badInfos",alreadyRegisteredStudentsWithErrors);
-            session.setAttribute("badInfoExcell",excellFileRowObjectsExistsInDatabaseWithErrors);
+           if(errorOccured){//S'il y a eu d'erreur
+                session.setAttribute("erreur",true);
+           }
+           else{
+               session.setAttribute("inscritspaserreur",excellFileRowObjectsExistsWithoutErrors);
+               session.setAttribute("dejaInscrits",alreadyRegisteredStudents);
+               session.setAttribute("pasInscrits",excellFileRowObjectsNotExistsInDatabase);
 
+               System.out.println(alreadyRegisteredStudents.size()+" est la taille du fichier");
+               if(alreadyRegisteredStudentsWithErrors.size()>0 ){
+                   session.setAttribute("badInfos",alreadyRegisteredStudentsWithErrors);
+                   session.setAttribute("badInfoExcell",excellFileRowObjectsExistsInDatabaseWithErrors);
+               }
+
+           }
             workbook.close();
 
         } catch (IOException e) {
@@ -187,6 +216,20 @@ public class ExcellImporter {
 
     }
 
-    public  boolean checkNiveauConvenable(){ return  true;}
+    public  boolean checkNiveauConvenable(){
+        boolean flag=true;
+        return flag;
+    }
+
+    public  void cleanSessions(HttpSession session){
+        if(session.getAttribute("inscritspaserreur")!=null) session.removeAttribute("inscritspaserreur");
+        if(session.getAttribute("badInfos")!=null) session.removeAttribute("badInfos");
+        if(session.getAttribute("badInfoExcell")!=null) session.removeAttribute("badInfoExcell");
+        if(session.getAttribute("dejaInscrits")!=null) session.removeAttribute("dejaInscrits");
+        if(session.getAttribute("erreur")!=null) session.removeAttribute("erreur");
+        if(session.getAttribute("pasInscrits")!=null) session.removeAttribute("pasInscrits");
+
+
+    }
 
 }

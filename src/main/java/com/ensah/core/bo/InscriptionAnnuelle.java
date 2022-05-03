@@ -2,14 +2,7 @@ package com.ensah.core.bo;
 
 import java.util.*;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 
 /**
  * Represente une inscription annuelle.
@@ -43,15 +36,15 @@ public class InscriptionAnnuelle {
 	private String plusInfos;
 
 	/**Permet de stocker les notes des matières*/
-	@OneToMany(mappedBy = "inscriptionAnnuelle", cascade = CascadeType.ALL, targetEntity = InscriptionMatiere.class)
+	@OneToMany(mappedBy = "inscriptionAnnuelle", cascade = CascadeType.ALL, targetEntity = InscriptionMatiere.class,fetch = FetchType.EAGER)
 	private Set<InscriptionMatiere> inscriptionMatieres;
 
 	
 	/**Permet de stocker les notes des matières*/
-	@OneToMany(mappedBy = "inscriptionAnnuelle", cascade = CascadeType.ALL, targetEntity = InscriptionModule.class)
+	@OneToMany(mappedBy = "inscriptionAnnuelle", cascade = CascadeType.ALL, targetEntity = InscriptionModule.class,fetch = FetchType.EAGER)
 	private Set<InscriptionModule> inscriptionModules;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "idNiveau")
 	private Niveau niveau;
 
@@ -155,4 +148,21 @@ public class InscriptionAnnuelle {
 		this.plusInfos = plusInfos;
 	}
 
+	@Override
+	public String toString() {
+		return "InscriptionAnnuelle{" +
+				"idInscription=" + idInscription +
+				", annee=" + annee +
+				", etat=" + etat +
+				", type='" + type + '\'' +
+				", rang=" + rang +
+				", validation='" + validation + '\'' +
+				", mention='" + mention + '\'' +
+				", plusInfos='" + plusInfos + '\'' +
+				", inscriptionMatieres=" + inscriptionMatieres +
+				", inscriptionModules=" + inscriptionModules +
+				", niveau=" + niveau +
+				", etudiant=" + etudiant +
+				'}';
+	}
 }

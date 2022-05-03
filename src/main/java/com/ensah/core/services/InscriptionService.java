@@ -1,10 +1,11 @@
 package com.ensah.core.services;
 
 import com.ensah.core.bo.Etudiant;
+import com.ensah.core.bo.InscriptionAnnuelle;
 
 public interface InscriptionService {
 
 
-    public Etudiant getEtudiantById();
+    public  void reinscrireEtudiant(Etudiant etudiant);
 
 }

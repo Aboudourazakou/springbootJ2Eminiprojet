@@ -13,7 +13,17 @@
 <body>
    <form action="/admin/inscription" method="post" enctype="multipart/form-data">
       <input type="file" accept="*/*" name="file">
-      <button type="submit" >Valider</button>
+      <button  type="submit" >Valider</button>
    </form>
 </body>
 </html>
+<script>
+  function  post(e){
+      e.preventDefault();
+      fetch("http://localhost:8080/admin/filiere", {
+          method: "GET",
+      }).then(res => {
+          console.log("Request complete! response:", res);
+      });
+  }
+</script>

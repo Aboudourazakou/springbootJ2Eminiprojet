@@ -71,6 +71,14 @@ public class Module {
 		this.elements = elements;
 	}
 
-
-
+	@Override
+	public String toString() {
+		return "Module{" +
+				"idModule=" + idModule +
+				", titre='" + titre + '\'' +
+				", code='" + code + '\'' +
+				", elements=" + elements +
+				", niveau=" + niveau +
+				'}';
+	}
 }

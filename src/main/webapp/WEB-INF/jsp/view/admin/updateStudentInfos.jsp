@@ -20,44 +20,72 @@
          donnees dans le fichier excell.</p>
  </div>
 <div class="wrapper">
+<c:if test="${!empty sessionScope.badInfos}">
+  <c:choose>
+      <c:when test="${sessionScope.badInfos.size()>=1}">
+          <table class="styled-table">
+              <thead>
+              <tr>
+                  <th>Donnees du fichier</th>
+                  <th>Donnees en base de donnees</th>
+                  <th>Mettre a jour?</th>
+              </tr>
+              </thead>
+              <tbody>
+              <c:forEach var="i" begin="0" end="${badInfos.size()-1}" step="1" >
+                  <tr>
 
-    <table class="styled-table">
-        <thead>
-        <tr>
-            <th>Donnees du fichier</th>
-            <th>Donnees en base de donnees</th>
-            <th>Mettre a jour?</th>
-        </tr>
-        </thead>
-        <tbody>
-      <c:forEach var="i" begin="0" end="${badInfos.size()-1}" step="1" >
-        <tr>
+                      <td><c:out value="${badInfoExcell.get(i).getNom()}" /> ,<c:out value="${badInfoExcell.get(i).getPrenom()}" /> ,<c:out value="${badInfoExcell.get(i).getCne()}" /></td>
+                      <td><c:out value="${badInfos.get(i).getNom()}" /> ,<c:out value="${badInfos.get(i).getPrenom()}" /> ,<c:out value="${badInfos.get(i).getCne()}" /></td>
+                      <td><input type="checkbox" value="${badInfos.get(i).getEmail()}" onclick="showButton()" /></td>
+                  </tr>
 
-            <td><c:out value="${badInfoExcell.get(i).getNom()}" /> ,<c:out value="${badInfoExcell.get(i).getPrenom()}" /> ,<c:out value="${badInfoExcell.get(i).getCne()}" /></td>
-             <td><c:out value="${badInfos.get(i).getNom()}" /> ,<c:out value="${badInfos.get(i).getPrenom()}" /> ,<c:out value="${badInfos.get(i).getCne()}" /></td>
-            <td><input type="checkbox" value="${badInfos.get(i).getEmail()}" /></td>
-        </tr>
-
-      </c:forEach>
+              </c:forEach>
 
 
-        </tbody>
-    </table>
+              </tbody>
+          </table>
+      </c:when>
+      <c:otherwise>
+             <p>Aucune info</p>
+      </c:otherwise>
+  </c:choose>
+</c:if>
 
 
 </div>
-<div style="width: 100%;display: flex;justify-content:center" > <button onclick="update()">Valider</button></div>
+<div style="width: 100%;display: flex;justify-content:center;display: none" id="button" > <button style="background: green" onclick="update()">Valider</button></div>
+ <div style="width: 100%;display: flex;justify-content:center;margin-top: 20px" > <a href="/admin/validerInscriptions"> Continuer</a></div>
 </body>
 
 </html>
 
 <script>
+
+
+    function  showButton(){
+        let el=document.getElementById("button");
+
+        el.style.display="block"
+
+    }
      function  update(){
-          let checkboxes=document.getElementsByTagName('input');
+
+
+
+
+         let checkboxes=document.getElementsByTagName('input');
 
           for(checkbox of checkboxes){
+              console.log("Hi dans")
               if(checkbox.checked){
-                  alert(checkbox.value)
+
+
+                  fetch("http://localhost:8080/admin/rest/updateInfos/"+checkbox.value, {
+                      method: "GET",
+                  }).then(res => {
+                      console.log("Request complete! response:", res);
+                  });
               }
           }
      }

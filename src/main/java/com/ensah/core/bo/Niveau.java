@@ -2,14 +2,7 @@ package com.ensah.core.bo;
 
 import java.util.*;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 
 @Entity
 public class Niveau {
@@ -22,11 +15,22 @@ public class Niveau {
 
 	private String titre;
 
+	@OneToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "niveauSuivan", referencedColumnName = "idNiveau")
+	private Niveau niveauSuivant;
 	@OneToMany(mappedBy = "niveau" , cascade = CascadeType.ALL, targetEntity = Module.class)
 	private List<Module> modules;
 
 	@OneToMany(mappedBy = "niveau" , cascade = CascadeType.ALL, targetEntity = InscriptionAnnuelle.class)
 	private List<InscriptionAnnuelle> inscriptions;
+
+	public Niveau getNiveauSuivant() {
+		return niveauSuivant;
+	}
+
+	public void setNiveauSuivant(Niveau niveauSuivant) {
+		this.niveauSuivant = niveauSuivant;
+	}
 
 	@ManyToOne
 	@JoinColumn(name="idFiliere")
