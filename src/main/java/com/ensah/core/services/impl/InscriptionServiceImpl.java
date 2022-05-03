@@ -66,7 +66,7 @@ public class InscriptionServiceImpl implements InscriptionService {
 
             }
             else {
-                
+
 
             }
 
