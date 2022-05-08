@@ -12,7 +12,7 @@
 </head>
 <body>
    <form action="/admin/inscription" method="post" enctype="multipart/form-data">
-      <input type="file" accept="*/*" name="file">
+      <input type="file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" name="file">
       <button  type="submit" >Valider</button>
    </form>
 </body>

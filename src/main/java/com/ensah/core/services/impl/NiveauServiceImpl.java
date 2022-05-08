@@ -42,6 +42,7 @@ public class NiveauServiceImpl implements NiveauService {
           //On cherche a savoir si l'utilisateur a ete specifique en ce qui concerne son niveau
           //en ne choisissant pas les niveaux impossibles
 
+
          if(!niveauxImpossibles.contains(identifiant)){
 
              if(niveauActuel.getFiliere().getTitreFiliere().equals(derniereInscriptionAnnulle.getNiveau().getFiliere().getTitreFiliere()

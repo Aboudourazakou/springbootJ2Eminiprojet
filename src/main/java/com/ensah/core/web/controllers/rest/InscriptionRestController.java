@@ -6,6 +6,7 @@ import com.ensah.core.bo.Journal;
 import com.ensah.core.dao.FiliereDao;
 import com.ensah.core.services.JournalService;
 import com.ensah.core.services.impl.EtudiantServiceImpl;
+import com.ensah.core.services.impl.InscriptionServiceImpl;
 import com.ensah.core.services.impl.JournalServiceImpl;
 import com.ensah.core.utils.ExcellFileRowObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,9 @@ public class InscriptionRestController {
     FiliereDao filiereDao;
     ExcellFileRowObject targetRow;
     Etudiant targetEtudiant;
+
+    @Autowired
+    InscriptionServiceImpl inscriptionService;
 
 
     @RequestMapping(value = "/admin/rest/updateInfos/{email}",method = RequestMethod.GET)
@@ -85,6 +89,48 @@ public class InscriptionRestController {
 
         return  "succes";
     }
+
+
+    @RequestMapping(value = "admin/validerInscriptions/{id}", method = RequestMethod.GET)
+    public void validerInscriptionsPost(@PathVariable("id") int id) {
+
+
+
+        List<Etudiant> etudiants= (List<Etudiant>) session.getAttribute("dejaInscrits");
+        Etudiant etudiant=null;
+        for(Etudiant et:etudiants){
+            if(et.getIdUtilisateur()==id){
+                etudiant=et;
+                break;
+            }
+        }
+
+
+        inscriptionService.reinscrireEtudiant(etudiant);
+
+    }
+
+
+    @RequestMapping(value = "admin/InscrireNouvel/{id}", method = RequestMethod.GET)
+    public void validerInscriptionsNouveauxPost(@PathVariable("id") int id) {
+
+
+
+        List<Etudiant> etudiants= (List<Etudiant>) session.getAttribute("dejaInscrits");
+        Etudiant etudiant=null;
+        for(Etudiant et:etudiants){
+            if(et.getIdUtilisateur()==id){
+                etudiant=et;
+                break;
+            }
+        }
+
+
+        inscriptionService.reinscrireEtudiant(etudiant);
+
+    }
+
+
 
 
 

@@ -41,4 +41,9 @@ public class EtudiantServiceImpl  implements EtudiantService {
 
     }
 
+    @Override
+    public void saveEtudiant(Etudiant etudiant) {
+          etudiantDao.save(etudiant);
+    }
+
 }

@@ -101,6 +101,7 @@ public class InscriptionController {
          assainirLaSession();
         return "admin/listInscriptions";
     }
+/*
     @PostMapping("admin/validerInscriptions")
     public  void validerInscriptionsPost(){
 
@@ -112,6 +113,7 @@ public class InscriptionController {
 
 
     }
+*/
 
 
     public  void assainirLaSession(){

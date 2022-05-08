@@ -123,7 +123,7 @@ public class ExcellImporter {
                 System.out.println("Occured 3 "+errorOccured);
                 if(etudiantServiceImpl.findIfEtudiantExists(id)){
                     Etudiant etudiant=etudiantServiceImpl.getEtudiant(id);
-                    System.out.println(id+" est l'id temporaire");
+                    System.out.println(id_niveau+" est l'id temporaire");
                     etudiant.setIdNiveauTemporaire(id_niveau);
 
 

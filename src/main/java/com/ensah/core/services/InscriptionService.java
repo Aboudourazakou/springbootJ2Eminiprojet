@@ -7,5 +7,6 @@ public interface InscriptionService {
 
 
     public  void reinscrireEtudiant(Etudiant etudiant);
+    public  void  inscrireEtudiant(Etudiant etudiant);
 
 }

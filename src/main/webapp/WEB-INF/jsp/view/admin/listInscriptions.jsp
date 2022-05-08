@@ -18,9 +18,9 @@
 <body>
 <div class="p" style="display: flex;width: 100%;justify-content:space-around">
     <p>ANCIENS ETUDIANTS</p>
-    <form action="/admin/validerInscriptions" method="post">
-    <button> Reinscrire tous ces etudiants</button>
-    </form>
+
+    <button onclick="reinscrire()"> Reinscrire tous ces etudiants</button>
+
 </div>
 
 <div class="wrapper">
@@ -71,8 +71,7 @@
             <th>Niveau dans la base</th>
             <th>Niveau suivant</th>
             <th>Filiere</th>
-
-
+            <th>Action</th>
         </tr>
         </thead>
         <tbody>
@@ -85,6 +84,7 @@
                 <td><c:out value="${derniereInscriptionAnnuelle.getNiveau().getAlias()}" /></td>
                 <td><c:out value="${derniereInscriptionAnnuelle.getNiveau().getNiveauSuivant().getAlias()}" /></td>
                 <td><c:out value="${derniereInscriptionAnnuelle.getNiveau().getFiliere().getTitreFiliere()}" /></td>
+                <td><button  objet="${dejaInscrits.get(i).getIdUtilisateur()}">Reinscrire</button></td>
             </tr>
         </c:forEach>
 
@@ -99,6 +99,42 @@
 </html>
 
 <script>
+
+    function  reinscrire(){
+
+        let elements=document.querySelectorAll("td > button")
+
+        for(el of elements){
+
+
+
+                fetch("http://localhost:8080/admin/validerInscriptions/"+el.getAttribute("objet")+"/" +
+                    ""+el.getAttribute("idTemp"), {
+                    method: "GET",
+                }).then(res => {
+                    console.log("Request complete! response:", res);
+                });
+            }
+
+
+    }
+    function  inscrire(){
+
+        let elements=document.querySelectorAll("td > button")
+
+        for(el of elements){
+
+
+
+            fetch("http://localhost:8080/admin/InscrireNouvel"+el.getAttribute("objet"), {
+                method: "GET",
+            }).then(res => {
+                console.log("Request complete! response:", res);
+            });
+        }
+
+
+    }
     function  update(){
         let checkboxes=document.getElementsByTagName('input');
 

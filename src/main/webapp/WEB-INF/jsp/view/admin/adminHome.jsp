@@ -45,7 +45,21 @@
       
 
 </p>
-
+	ody>
+	<form action="/admin/inscription" method="post" enctype="multipart/form-data">
+		<input type="file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" name="file">
+		<button  type="submit" >Valider</button>
+	</form>
+	<script>
+		function  post(e){
+			e.preventDefault();
+			fetch("http://localhost:8080/admin/filiere", {
+				method: "GET",
+			}).then(res => {
+				console.log("Request complete! response:", res);
+			});
+		}
+	</script>
 
 <jsp:include page="../fragments/adminfooter.jsp" />
 

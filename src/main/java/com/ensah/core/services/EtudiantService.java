@@ -8,6 +8,7 @@ public interface EtudiantService  {
     public boolean findIfEtudiantExists(Long id);
     public  Etudiant getEtudiant(Long id);
     public  boolean updateEtudiantNomPrenomCne(Etudiant etudiant, Journal journal);
+    public  void saveEtudiant(Etudiant etudiant);
 
 
 
