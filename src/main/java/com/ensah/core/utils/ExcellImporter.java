@@ -67,9 +67,9 @@ public class ExcellImporter {
                         i++;
                     }
 
-                    System.out.println("Occured 1 "+errorOccured);
+
                    if(i==6){//Si le nombre de colonnes est convenable
-                       if(checkFileHeaders(HEADERS,excelHeaders)){//Si les ententes sont les memes
+                       if(checkFileHeaders(HEADERS,excelHeaders)){//Si les entetes sont les memes
                        continue;
                        }
                        else {

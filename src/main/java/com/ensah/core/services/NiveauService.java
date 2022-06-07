@@ -8,4 +8,5 @@ public interface NiveauService {
 
 
     boolean validerNiveau(Etudiant etudiant, Long id);
+    public  boolean checkLevelFaisability(int id_niveau);
 }

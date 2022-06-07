@@ -20,8 +20,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class Utilisateur {
 
 	@Id
-	@GeneratedValue(generator = "increment")
-	@GenericGenerator(name = "increment", strategy = "increment")
 	private Long idUtilisateur;
 
 	private String nom;

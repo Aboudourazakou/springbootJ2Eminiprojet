@@ -102,5 +102,10 @@ public class NiveauServiceImpl implements NiveauService {
 
     }
 
+    @Override
+    public boolean checkLevelFaisability(int id_niveau) {
+        return  !niveauxImpossibles.contains(id_niveau);
+    }
+
 
 }

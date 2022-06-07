@@ -33,6 +33,7 @@
             <th>Niveau dans la base</th>
             <th>Niveau suivant</th>
             <th>Filiere</th>
+            <th>Action</th>
 
 
         </tr>
@@ -47,6 +48,7 @@
               <td><c:out value="${derniereInscriptionAnnuelle.getNiveau().getAlias()}" /></td>
               <td><c:out value="${derniereInscriptionAnnuelle.getNiveau().getNiveauSuivant().getAlias()}" /></td>
               <td><c:out value="${derniereInscriptionAnnuelle.getNiveau().getFiliere().getTitreFiliere()}" /></td>
+              <td class="reinscription" ><button   id_user="${dejaInscrits.get(i).getIdUtilisateur()}">Reinscrire</button></td>
           </tr>
   </c:forEach>
 
@@ -58,7 +60,7 @@
 
 <div class="p" style="display: flex;width: 100%;justify-content:space-around">
     <p>NOUVELS ETUDIANTS</p>
-    <button>Inscrire tous ces etudiants</button>
+    <button onclick="inscrire()">Inscrire tous ces etudiants</button>
 </div>
 
 <div class="wrapper">
@@ -68,23 +70,19 @@
         <tr>
             <th>Nom</th>
             <th>Prenom</th>
-            <th>Niveau dans la base</th>
-            <th>Niveau suivant</th>
-            <th>Filiere</th>
+            <th>Niveau d'inscription</th>
+            <th>Type</th>
             <th>Action</th>
         </tr>
         </thead>
         <tbody>
-        <c:forEach var="i" begin="0" end="${dejaInscrits.size()-1}" step="1" >
+        <c:forEach var="i" begin="0" end="${pasInscrits.size()-1}" step="1" >
             <tr>
-                <c:set var="inscriptions" value="${dejaInscrits.get(i).getInscriptions()}"/>
-                <c:set var="derniereInscriptionAnnuelle" value="${inscriptions.get(inscriptions.size()-1)}"/>
-                <td><c:out value="${dejaInscrits.get(i).getNom()}" /></td>
-                <td><c:out value="${dejaInscrits.get(i).getPrenom()}" /></td>
-                <td><c:out value="${derniereInscriptionAnnuelle.getNiveau().getAlias()}" /></td>
-                <td><c:out value="${derniereInscriptionAnnuelle.getNiveau().getNiveauSuivant().getAlias()}" /></td>
-                <td><c:out value="${derniereInscriptionAnnuelle.getNiveau().getFiliere().getTitreFiliere()}" /></td>
-                <td><button  objet="${dejaInscrits.get(i).getIdUtilisateur()}">Reinscrire</button></td>
+                <td><c:out value="${pasInscrits.get(i).getNom()}" /></td>
+                <td><c:out value="${pasInscrits.get(i).getPrenom()}" /></td>
+                <td><c:out value="${pasInscrits.get(i).getId_niveau()}" /></td>
+                <td><c:out value="${pasInscrits.get(i).getType()}" /></td>
+                <td class="inscription"><button   id_user="${pasInscrits.get(i).getId_etudiant()}">Inscrire</button></td>
             </tr>
         </c:forEach>
 
@@ -102,14 +100,13 @@
 
     function  reinscrire(){
 
-        let elements=document.querySelectorAll("td > button")
+        let elements=document.querySelectorAll(".reinscription > button")
 
         for(el of elements){
 
 
 
-                fetch("http://localhost:8080/admin/validerInscriptions/"+el.getAttribute("objet")+"/" +
-                    ""+el.getAttribute("idTemp"), {
+                fetch("http://localhost:8080/admin/validerInscriptions/"+el.getAttribute("id_user"), {
                     method: "GET",
                 }).then(res => {
                     console.log("Request complete! response:", res);
@@ -120,13 +117,11 @@
     }
     function  inscrire(){
 
-        let elements=document.querySelectorAll("td > button")
-
+        let elements=document.querySelectorAll(".inscription > button")
+        console.log(elements)
         for(el of elements){
 
-
-
-            fetch("http://localhost:8080/admin/InscrireNouvel"+el.getAttribute("objet"), {
+            fetch("http://localhost:8080/admin/InscrireNouvel/"+el.getAttribute("id_user"), {
                 method: "GET",
             }).then(res => {
                 console.log("Request complete! response:", res);

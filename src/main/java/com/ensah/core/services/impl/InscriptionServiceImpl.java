@@ -2,10 +2,7 @@ package com.ensah.core.services.impl;
 
 import com.ensah.core.bo.*;
 import com.ensah.core.bo.Module;
-import com.ensah.core.dao.InscriptionDao;
-import com.ensah.core.dao.InscriptionModuleDao;
-import com.ensah.core.dao.ModuleDao;
-import com.ensah.core.dao.NiveauDao;
+import com.ensah.core.dao.*;
 import com.ensah.core.services.InscriptionService;
 import com.ensah.core.services.ModuleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +25,8 @@ public class InscriptionServiceImpl implements InscriptionService {
 
     @Autowired
     InscriptionModuleDao inscriptionModuleDao;
+    @Autowired
+    IUtilisateurDao utilisateurDao;
 
     List<Integer>niveauxPossiblesCp2= Arrays.asList(3,6,9,13,16,23,26);
     List<Integer>niveauxOptions=Arrays.asList(17,18,19,20,29);
@@ -112,7 +111,44 @@ public class InscriptionServiceImpl implements InscriptionService {
 
     @Override
     public void inscrireEtudiant(Etudiant etudiant) {
-        etudiantServiceimpl.saveEtudiant(etudiant);
+        Utilisateur u=new Utilisateur();
+        u.setCin(etudiant.getCin());
+        u.setNomArabe(etudiant.getNomArabe());
+        u.setTelephone(etudiant.getTelephone());
+        u.setNom(etudiant.getNom());
+        u.setEmail(etudiant.getEmail());
+        u.setIdUtilisateur(etudiant.getIdUtilisateur());
+        Long idTemp=etudiant.getIdNiveauTemporaire();
+        System.out.println(idTemp+" est l'Id temporaire");
+        //Utilisateur u2=utilisateurDao.save(u);
+         etudiantServiceimpl.saveEtudiant(etudiant);
+        etudiant=etudiantServiceimpl.getEtudiant(etudiant.getIdUtilisateur());
+        etudiant.setIdNiveauTemporaire(idTemp);
+
+        Niveau niveau1= niveauDao.getById(idTemp);
+        //On verfie s'il vient de CP2 et que le niveau suivant correspond a un niveau de Cp
+        if(niveauxPossiblesCp2.contains(Math.toIntExact(idTemp))){
+            InscriptionAnnuelle inscriptionAnnuelle=new InscriptionAnnuelle();
+            System.out.println("Sout niveau cp activee pour "+etudiant.getNom());
+            //On l'inscrit d'abord au cycle d'ingenieur
+            process(niveau1,etudiant,1,"I");
+            //S'il est admis
+            //On l'inscrit dans la nouvelle filiere
+            process(niveau1,etudiant,2,"I");
+        }
+        //On verifie s'il veut s'inscrire dans les niveaux d'options GL,BI,BPC..
+        else if(niveauxOptions.contains(Math.toIntExact(idTemp ))){
+            //Inscrire dans la filiere GC3,GI3.....
+            process(niveau1,etudiant,3,"I");
+            //Inscrire dans l'option
+            process(niveau1,etudiant,4,"I");
+
+        }
+        else{
+            process(niveau1,etudiant,5,"I");
+        }
+
+
 
     }
 
@@ -128,6 +164,7 @@ public class InscriptionServiceImpl implements InscriptionService {
 
         //Si l'etudiant quitte les prepas  pour un cycle d'ingenieur,on l'inscrit au cycle d'ingenieur
         if(i==1){
+            System.out.println("Inscription dans prepas pour "+etudiant.getNom());
             Niveau n=new Niveau();
             n.setIdNiveau(12L);
             inscriptionAnnuelle.setNiveau(n);
@@ -137,6 +174,7 @@ public class InscriptionServiceImpl implements InscriptionService {
 
            //Cette condition pour des filieres  a option:derniere annnee
             if(i==3) {
+                System.out.println("Inscription  filiere option pour "+etudiant.getNom());
                 Long idT = etudiant.getIdNiveauTemporaire();
                 //GC3 on l'inscrit d'abord dans GC3
                 if (idT == 17 || idT == 18) {
