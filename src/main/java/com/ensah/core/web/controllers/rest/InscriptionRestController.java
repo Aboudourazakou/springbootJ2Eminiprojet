@@ -100,7 +100,7 @@ public class InscriptionRestController {
             session.removeAttribute("badInfoExcell");
         }
 
-        return  "succes";
+        return  "success";
     }
 
 
@@ -178,7 +178,7 @@ public class InscriptionRestController {
 
         }
 
-        return new ResponseTransfer("successtg");
+        return new ResponseTransfer("success");
 
     }
 
