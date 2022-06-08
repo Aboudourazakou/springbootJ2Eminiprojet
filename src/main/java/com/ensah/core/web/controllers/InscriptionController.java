@@ -8,6 +8,7 @@ import com.ensah.core.dao.NiveauDao;
 import com.ensah.core.services.EtudiantService;
 import com.ensah.core.services.InscriptionService;
 import com.ensah.core.services.NiveauService;
+import com.ensah.core.services.exceptions.InscriptionFailureException;
 import com.ensah.core.services.impl.EtudiantServiceImpl;
 import com.ensah.core.services.impl.NiveauServiceImpl;
 import com.ensah.core.utils.ExcellFileRowObject;
@@ -19,8 +20,10 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.annotation.MultipartConfig;
@@ -47,6 +50,8 @@ public class InscriptionController {
     @Autowired
     public InscriptionService inscriptionService;
 
+    String message="";
+
 
     @GetMapping("/admin/inscription")
     public  String importExcellGet(){
@@ -58,12 +63,23 @@ public class InscriptionController {
 
     @PostMapping("/admin/inscription")
     public  String importExcellPost(@RequestParam("file") MultipartFile file, RedirectAttributes redirectAttributes) throws IOException {
-
+       boolean error=false;
 
         if(ExcellImporter.hasExcelFormat(file)) {
             ExcellImporter excellImporter = new ExcellImporter();
 
-            excellImporter.excellFileDataPreprocessing(etudiantServiceImpl, file.getInputStream(), session, niveauServiceImpl);
+            try{
+                excellImporter.excellFileDataPreprocessing(etudiantServiceImpl, file.getInputStream(), session, niveauServiceImpl);
+            } catch (InscriptionFailureException e){
+                message=e.getMessage();
+                error=true;
+
+
+            }
+            if(error) {
+                redirectAttributes.addAttribute("message",message);
+                return "redirect:/admin/inscriptionError";
+            }
             if (session.getAttribute("erreur") == null) {//Si tout s'est bien passe
 
                 if (session.getAttribute("badInfos") != null) {//S'il  y a de donnees contradictoires dans le fichier
@@ -82,11 +98,9 @@ public class InscriptionController {
 
         }
         else {
-            System.out.println("Le fichier n'est pas excell");
-            return "error";
+            message="Le fichier n'est pas excell";
+            return "redirect:/admin/inscriptionError";
         }
-
-
 
     }
 
@@ -100,6 +114,12 @@ public class InscriptionController {
     public String validerInscriptionGet(){
          assainirLaSession();
         return "admin/listInscriptions";
+    }
+    @GetMapping("/admin/inscriptionError")
+    public String errorPage(RedirectAttributes attributes, Model model){
+
+         model.addAttribute("message",message);
+        return "admin/inscriptionError";
     }
 /*
     @PostMapping("admin/validerInscriptions")
@@ -124,6 +144,8 @@ public class InscriptionController {
             List<ExcellFileRowObject>rowsWithNoErrors= (List<ExcellFileRowObject>) session.getAttribute("inscritspaserreur");
             List<Etudiant>etudiantsInscrits= (List<Etudiant>) session.getAttribute("dejaInscrits");
             //S'il y en a on les considere comme le bon vouloir de user,alors on les deplace
+            if(rowsWithNoErrors==null) rowsWithNoErrors=new ArrayList<>();
+            if(etudiantsInscrits==null) etudiantsInscrits=new ArrayList<>();
             rowsWithNoErrors.addAll(rows);
             etudiantsInscrits.addAll(etudiantsWithErrors);
             session.removeAttribute("badInfos");

@@ -16,6 +16,7 @@
     <title>Title</title>
 </head>
 <body>
+<c:if test="${sessionScope.dejaInscrits.isEmpty()==false}">
 <div class="p" style="display: flex;width: 100%;justify-content:space-around">
     <p>ANCIENS ETUDIANTS</p>
 
@@ -39,6 +40,7 @@
         </tr>
         </thead>
         <tbody>
+
   <c:forEach var="i" begin="0" end="${dejaInscrits.size()-1}" step="1" >
           <tr>
               <c:set var="inscriptions" value="${dejaInscrits.get(i).getInscriptions()}"/>
@@ -54,9 +56,13 @@
 
 
 
+
         </tbody>
     </table>
 </div>
+</c:if>
+
+<c:if test="${sessionScope.pasInscrits.isEmpty()==false}">
 
 <div class="p" style="display: flex;width: 100%;justify-content:space-around">
     <p>NOUVELS ETUDIANTS</p>
@@ -75,8 +81,9 @@
             <th>Action</th>
         </tr>
         </thead>
-        <tbody>
-        <c:forEach var="i" begin="0" end="${pasInscrits.size()-1}" step="1" >
+    <tbody>
+
+<c:forEach var="i" begin="0" end="${pasInscrits.size()-1}" step="1" >
             <tr>
                 <td><c:out value="${pasInscrits.get(i).getNom()}" /></td>
                 <td><c:out value="${pasInscrits.get(i).getPrenom()}" /></td>
@@ -88,10 +95,12 @@
 
 
 
+
         </tbody>
     </table>
 </div>
-
+</c:if>
+<p style="color: red" id="messageId"></p>
 </body>
 
 </html>
@@ -123,8 +132,17 @@
 
             fetch("http://localhost:8080/admin/InscrireNouvel/"+el.getAttribute("id_user"), {
                 method: "GET",
-            }).then(res => {
-                console.log("Request complete! response:", res);
+            }).then(res=> {
+                let result=res.json();
+                var message=""
+               result.then(response=>{
+                    message=response.message;
+                     if(message!="success"){
+                        messageId.innerHTML=messageId.textContent+"<br>"+message;
+                     }
+                })
+                console.log(message);
+
             });
         }
 

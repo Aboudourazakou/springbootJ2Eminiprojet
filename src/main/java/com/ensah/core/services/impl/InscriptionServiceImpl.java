@@ -5,8 +5,10 @@ import com.ensah.core.bo.Module;
 import com.ensah.core.dao.*;
 import com.ensah.core.services.InscriptionService;
 import com.ensah.core.services.ModuleService;
+import com.ensah.core.services.exceptions.InscriptionFailureException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 
 import java.util.*;
 
@@ -35,13 +37,14 @@ public class InscriptionServiceImpl implements InscriptionService {
     List<Integer>niveauxAvaliderAbsolument=Arrays.asList(12,7,5,11,15,17,18,19,20);
     //Annee actuelle
     int year=new  Date().getYear()+1900;
+     public static String message="";
 
     
 
 
 
     @Override
-    public void reinscrireEtudiant(Etudiant etudiant) {
+    public String reinscrireEtudiant(Etudiant etudiant) {
         int niveau= Math.toIntExact(etudiant.getIdNiveauTemporaire());
         System.out.println(etudiant.getIdNiveauTemporaire());
         Niveau niveau1= niveauDao.getById(etudiant.getIdNiveauTemporaire());
@@ -102,15 +105,19 @@ public class InscriptionServiceImpl implements InscriptionService {
         }
         else{
 
-            System.out.println("Cet etudiant est deja inscrit  pour cette annne "+etudiant.getPrenom());
+            System.out.println("Deja inscrits");
+            message="L'etudiant "+etudiant.getNom()+"est deja inscrits\n Annnee passee "+derniereInscriptionAnnuelle.getAnnee()+"\n"+
+            "Cette annee "+year;
             System.out.println("Annnee passee "+derniereInscriptionAnnuelle.getAnnee());
             System.out.println("Cette anneee "+year );
+
         }
+        return message;
 
     }
 
     @Override
-    public void inscrireEtudiant(Etudiant etudiant) {
+    public void inscrireEtudiant(Etudiant etudiant){
         Utilisateur u=new Utilisateur();
         u.setCin(etudiant.getCin());
         u.setNomArabe(etudiant.getNomArabe());
@@ -129,7 +136,7 @@ public class InscriptionServiceImpl implements InscriptionService {
         //On verfie s'il vient de CP2 et que le niveau suivant correspond a un niveau de Cp
         if(niveauxPossiblesCp2.contains(Math.toIntExact(idTemp))){
             InscriptionAnnuelle inscriptionAnnuelle=new InscriptionAnnuelle();
-            System.out.println("Sout niveau cp activee pour "+etudiant.getNom());
+
             //On l'inscrit d'abord au cycle d'ingenieur
             process(niveau1,etudiant,1,"I");
             //S'il est admis
@@ -164,7 +171,7 @@ public class InscriptionServiceImpl implements InscriptionService {
 
         //Si l'etudiant quitte les prepas  pour un cycle d'ingenieur,on l'inscrit au cycle d'ingenieur
         if(i==1){
-            System.out.println("Inscription dans prepas pour "+etudiant.getNom());
+
             Niveau n=new Niveau();
             n.setIdNiveau(12L);
             inscriptionAnnuelle.setNiveau(n);
@@ -174,7 +181,7 @@ public class InscriptionServiceImpl implements InscriptionService {
 
            //Cette condition pour des filieres  a option:derniere annnee
             if(i==3) {
-                System.out.println("Inscription  filiere option pour "+etudiant.getNom());
+
                 Long idT = etudiant.getIdNiveauTemporaire();
                 //GC3 on l'inscrit d'abord dans GC3
                 if (idT == 17 || idT == 18) {
@@ -230,7 +237,7 @@ public class InscriptionServiceImpl implements InscriptionService {
 
 
     public  void failedStudentProcess(Niveau niveau,Etudiant etudiant,InscriptionAnnuelle derniereInscriptionAnnulle,int i){
-        int niveau_suivant= Math.toIntExact(niveau.getNiveauSuivant().getIdNiveau());
+       // int niveau_suivant= Math.toIntExact(niveau.getNiveauSuivant().getIdNiveau());
         InscriptionAnnuelle inscriptionAnnuelle=new InscriptionAnnuelle();
 
         inscriptionAnnuelle.setEtudiant(etudiant);
@@ -257,7 +264,7 @@ public class InscriptionServiceImpl implements InscriptionService {
 
 
         if(i==2){
-
+         //Pour les niveau qui ont un suivant
             Set<InscriptionModule>inscM=new HashSet<>();
             Niveau niveauSuivant=niveau.getNiveauSuivant();
             for(Module m:niveauSuivant.getModules()){

@@ -3,7 +3,9 @@ package com.ensah.core.utils;
 import com.ensah.core.bo.Etudiant;
 import com.ensah.core.dao.NiveauDao;
 import com.ensah.core.services.NiveauService;
+import com.ensah.core.services.exceptions.InscriptionFailureException;
 import com.ensah.core.services.impl.EtudiantServiceImpl;
+import com.ensah.core.services.impl.NiveauServiceImpl;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -36,7 +38,7 @@ public class ExcellImporter {
         return  false;
     }
 
-    public  void excellFileDataPreprocessing(EtudiantServiceImpl etudiantServiceImpl, InputStream is, HttpSession session, NiveauService niveauService){
+    public  void excellFileDataPreprocessing(EtudiantServiceImpl etudiantServiceImpl, InputStream is, HttpSession session, NiveauService niveauService) throws  InscriptionFailureException{
 
         List<ExcellFileRowObject> excellFileRowObjectsNotExistsInDatabase=new ArrayList<>();
         List<ExcellFileRowObject> excellFileRowObjectsExistsInDatabaseWithErrors=new ArrayList<>();
@@ -44,6 +46,7 @@ public class ExcellImporter {
         List<Etudiant>alreadyRegisteredStudents=new ArrayList<>();
         List <Etudiant>alreadyRegisteredStudentsWithErrors=new ArrayList<>();
         cleanSessions(session);
+        String message="";
 
 
         try {
@@ -67,18 +70,20 @@ public class ExcellImporter {
                         i++;
                     }
 
-
+                    System.out.println("Occured 1 "+errorOccured);
                    if(i==6){//Si le nombre de colonnes est convenable
                        if(checkFileHeaders(HEADERS,excelHeaders)){//Si les entetes sont les memes
                        continue;
                        }
                        else {
+                           message="Entetes differentes";
                            System.out.println("Entetes differentes");
                            errorOccured=true;
                            break;
                        }
                    }
                    else{
+                       message="Le nombre de colonnes n'est pas convenable";
                        System.out.println("Le nombre de colonnes n'est pas convenable");
                        errorOccured=true;
                        break;
@@ -116,6 +121,8 @@ public class ExcellImporter {
                 errorOccured=niveauService.findIfNiveauExists(excellFileRowObject.getId_niveau());
 
                 if(errorOccured){
+                    message="Le niveau pour l'etudiant " + excellFileRowObject.getNom() + " est " + excellFileRowObject.getId_niveau() +
+                            " Ce niveau n'exite pas";
                     System.out.println("Le niveau pour l'etudiant " + excellFileRowObject.getNom() + " est " + excellFileRowObject.getId_niveau() +
                             " Ce niveau n'exite pas");
                     break;
@@ -127,14 +134,18 @@ public class ExcellImporter {
                     etudiant.setIdNiveauTemporaire(id_niveau);
 
 
-                    errorOccured=  niveauService.validerNiveau(etudiant,excellFileRowObject.getId_niveau());
-                    if(errorOccured){
+                        errorOccured=  niveauService.validerNiveau(etudiant,excellFileRowObject.getId_niveau());
 
+
+                    if(errorOccured){
+                        message= NiveauServiceImpl.message;
                         break;
                     }
 
 
                     if(!checkReInscriptionValidity(excellFileRowObject)){
+                        message="Le type d'inscription de M."+excellFileRowObject.getNom()+"" +
+                        " existant dans la base est  "+excellFileRowObject.getType()+" Ce qui ne convient pas";
                         System.out.println("Le type d'inscription de M."+excellFileRowObject.getNom()+"" +
                                 " existant dans la base est  "+excellFileRowObject.getType()+" Ce qui ne convient pas");
                         break;
@@ -157,6 +168,8 @@ public class ExcellImporter {
                     if(!checkInscriptionValidity(excellFileRowObject)){
                         System.out.println("Le type d'inscription de M."+excellFileRowObject.getNom()+"" +
                                 " "+excellFileRowObject.getType()+" Ce qui ne convient pas");
+                        message="Le type d'inscription de M."+excellFileRowObject.getNom()+"" +
+                                " "+excellFileRowObject.getType()+" Ce qui ne convient pas";
                         errorOccured=true;
                         break;
                     }
@@ -172,8 +185,8 @@ public class ExcellImporter {
            }
            else{
                session.setAttribute("inscritspaserreur",excellFileRowObjectsExistsWithoutErrors);
-               session.setAttribute("dejaInscrits",alreadyRegisteredStudents);
-               session.setAttribute("pasInscrits",excellFileRowObjectsNotExistsInDatabase);
+            session.setAttribute("dejaInscrits",alreadyRegisteredStudents);
+              session.setAttribute("pasInscrits",excellFileRowObjectsNotExistsInDatabase);
 
                System.out.println(alreadyRegisteredStudents.size()+" est la taille du fichier");
                if(alreadyRegisteredStudentsWithErrors.size()>0 ){
@@ -182,10 +195,16 @@ public class ExcellImporter {
                }
 
            }
-            workbook.close();
 
-        } catch (IOException e) {
+            workbook.close();
+           if(errorOccured) throw new InscriptionFailureException(message);
+
+        } catch (InscriptionFailureException inscriptionFailureException){
+             throw  new InscriptionFailureException(message);
+        }
+        catch (IOException e) {
             throw new RuntimeException("fail to parse Excel file: " + e.getMessage());
+
         }
 
     }

@@ -30,6 +30,7 @@ public class EtudiantServiceImpl  implements EtudiantService {
         return  etudiantDao.getById(id);
     }
 
+
     public  boolean updateEtudiantNomPrenomCne(Etudiant etudiant,Journal journal){
 
         etudiantDao.save(etudiant);
