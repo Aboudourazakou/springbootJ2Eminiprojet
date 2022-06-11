@@ -144,6 +144,7 @@ public class ExcellImporter {
 
 
                     if(!checkReInscriptionValidity(excellFileRowObject)){
+                        errorOccured=true;
                         message="Le type d'inscription de M."+excellFileRowObject.getNom()+"" +
                         " existant dans la base est  "+excellFileRowObject.getType()+" Ce qui ne convient pas";
                         System.out.println("Le type d'inscription de M."+excellFileRowObject.getNom()+"" +

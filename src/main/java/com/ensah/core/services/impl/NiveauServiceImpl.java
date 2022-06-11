@@ -33,6 +33,7 @@ public class NiveauServiceImpl implements NiveauService {
 
     @Override
     public boolean validerNiveau(Etudiant etudiant, Long id)  {
+        message="";
         boolean errorOccured=false;
 
         Niveau niveauActuel=niveauDao.getById(id);
@@ -41,7 +42,9 @@ public class NiveauServiceImpl implements NiveauService {
         //On compare la filiere d;inscription de l'utilisateur a l'ancienne filiere
         //Attention a tenir compte des classes prepas dont les filieres sont differentes d ou la 2 e condition
         List<InscriptionAnnuelle> inscriptions=etudiant.getInscriptions();
-        InscriptionAnnuelle derniereInscriptionAnnulle=inscriptions.get(inscriptions.size()-1);
+
+           InscriptionAnnuelle  derniereInscriptionAnnulle=inscriptions.get(inscriptions.size()-1);
+
         //Un bug est remarque ici.En effet tout utilisateur voulant s'inscrire en derniere annee n'est pas soumise
         //aux restrictions.A revoir un peu tard
           if(!niveauxPasSuivant.contains(identifiant)){
@@ -61,9 +64,10 @@ public class NiveauServiceImpl implements NiveauService {
 
                           //On verifie si le niveau dans le fichier correspond au niveau suivant:
                           if(id==derniereInscriptionAnnulle.getNiveau().getNiveauSuivant().getIdNiveau()
-                                  || niveauxPossiblesCp2.contains(identifiant))
-                          {
+                                  || niveauxPossiblesCp2.contains(identifiant) && derniereInscriptionAnnulle.getNiveau().getIdNiveau()==2 )
 
+                          {
+                              System.out.println("Correspond bien");
 
                           }else{
                               errorOccured=true;

@@ -50,7 +50,7 @@
               <td><c:out value="${derniereInscriptionAnnuelle.getNiveau().getAlias()}" /></td>
               <td><c:out value="${derniereInscriptionAnnuelle.getNiveau().getNiveauSuivant().getAlias()}" /></td>
               <td><c:out value="${derniereInscriptionAnnuelle.getNiveau().getFiliere().getTitreFiliere()}" /></td>
-              <td class="reinscription" ><button   id_user="${dejaInscrits.get(i).getIdUtilisateur()}">Reinscrire</button></td>
+              <td class="reinscription" ><button onclick="reinscrireUnique(${dejaInscrits.get(i).getIdUtilisateur()})"   id_user="${dejaInscrits.get(i).getIdUtilisateur()}">Reinscrire</button></td>
           </tr>
   </c:forEach>
 
@@ -89,7 +89,7 @@
                 <td><c:out value="${pasInscrits.get(i).getPrenom()}" /></td>
                 <td><c:out value="${pasInscrits.get(i).getId_niveau()}" /></td>
                 <td><c:out value="${pasInscrits.get(i).getType()}" /></td>
-                <td class="inscription"><button   id_user="${pasInscrits.get(i).getId_etudiant()}">Inscrire</button></td>
+                <td class="inscription"><button onclick="inscrireUnique(${pasInscrits.get(i).getId_etudiant()})"   id_user="${pasInscrits.get(i).getId_etudiant()}">Inscrire</button></td>
             </tr>
         </c:forEach>
 
@@ -100,7 +100,10 @@
     </table>
 </div>
 </c:if>
+<p>ERREUR LOGS</p>
 <p style="color: red" id="messageId"></p>
+<p>SUCCESS LOGS</p>
+<p style="color: green" id="messageIdSuccess"></p>
 </body>
 
 </html>
@@ -117,10 +120,44 @@
 
                 fetch("http://localhost:8080/admin/validerInscriptions/"+el.getAttribute("id_user"), {
                     method: "GET",
-                }).then(res => {
-                    console.log("Request complete! response:", res);
+                }).then(response=>{
+                    message=response.message;
+                    if(message!="success"){
+                        messageId.innerHTML=messageId.textContent+"<br>"+message;
+                    }
+                    else{
+                        messageIdSuccess.innerHTML=messageIdSuccess.textContent+"<br>" +"Etudiant inscrit avec succes";
+                    }
                 });
             }
+
+
+    }
+
+    function  reinscrireUnique(id){
+
+
+
+
+             console.log(id+ " est l'id")
+
+            fetch("http://localhost:8080/admin/validerInscriptions/"+id, {
+                method: "GET",
+            }).then(res=> {
+            let result=res.json();
+            var message=""
+            result.then(response=>{
+                message=response.message;
+                if(message!="success"){
+                    messageId.innerHTML=messageId.textContent+"<br>"+message;
+                }
+                else{
+                    messageIdSuccess.innerHTML=messageIdSuccess.textContent+"<br>" +"Etudiant inscrit avec succes";
+                }
+            })
+
+
+        });
 
 
     }
@@ -140,11 +177,40 @@
                      if(message!="success"){
                         messageId.innerHTML=messageId.textContent+"<br>"+message;
                      }
+                     else{
+                         messageIdSuccess.innerHTML=messageIdSuccess.textContent+"<br>" +"Etudiant inscrit avec succes";
+                     }
                 })
-                console.log(message);
+
 
             });
         }
+
+
+    }
+
+    function  inscrireUnique(id){
+
+
+
+
+            fetch("http://localhost:8080/admin/InscrireNouvel/"+id, {
+                method: "GET",
+            }).then(res=> {
+                let result=res.json();
+                var message=""
+                result.then(response=>{
+                    message=response.message;
+                    if(message!="success"){
+                        messageId.innerHTML=messageId.textContent+"<br>"+message;
+                    }
+                    else{
+                        messageIdSuccess.innerHTML=messageIdSuccess.textContent+"<br>" +"Etudiant inscrit avec succes";
+                    }
+                })
+
+            });
+
 
 
     }

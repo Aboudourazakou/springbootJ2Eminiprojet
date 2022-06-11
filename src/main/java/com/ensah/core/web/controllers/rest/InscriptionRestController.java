@@ -1,9 +1,6 @@
 package com.ensah.core.web.controllers.rest;
 
-import com.ensah.core.bo.Etudiant;
-import com.ensah.core.bo.Filiere;
-import com.ensah.core.bo.Journal;
-import com.ensah.core.bo.Utilisateur;
+import com.ensah.core.bo.*;
 import com.ensah.core.dao.FiliereDao;
 import com.ensah.core.services.JournalService;
 import com.ensah.core.services.NiveauService;
@@ -58,11 +55,16 @@ public class InscriptionRestController {
                 Etudiant et=etudiants.get(i);
                 ExcellFileRowObject ex=rows.get(i);
                 Journal journal=new Journal();
+                ModifiedUsers m=new ModifiedUsers();
+                m.setCne(targetEtudiant.getCne());
+                m.setNom(targetEtudiant.getNom());
+                m.setIdEtudiant(targetEtudiant.getIdUtilisateur());
+                m.setPrenom(targetEtudiant.getPrenom());
                 journal.setEvenement(et.getNom(),et.getPrenom(),et.getCne(),ex.getNom(),ex.getPrenom(), ex.getCne(),session);
                 etudiants.get(i).setCne(rows.get(i).getCne());
                 etudiants.get(i).setPrenom(rows.get(i).getPrenom());
                 etudiants.get(i).setNom(rows.get(i).getNom());
-                 etudiantServiceImpl.updateEtudiantNomPrenomCne(etudiants.get(i),journal);
+                 etudiantServiceImpl.updateEtudiantNomPrenomCne(etudiants.get(i),journal,m);
 
                 break;
 
@@ -104,8 +106,9 @@ public class InscriptionRestController {
     }
 
 
-    @RequestMapping(value = "admin/validerInscriptions/{id}", method = RequestMethod.GET)
-    public String validerInscriptionsPost(@PathVariable("id") int id) {
+    @RequestMapping(value = "admin/validerInscriptions/{id}", method = RequestMethod.GET,produces =  MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseTransfer validerInscriptionsPost(@PathVariable("id") int id) {
 
 
 
@@ -120,8 +123,9 @@ public class InscriptionRestController {
 
 
 
-          String message=  inscriptionService.reinscrireEtudiant(etudiant);
-          return message;
+          String message= inscriptionService.reinscrireEtudiant(etudiant);
+        System.out.println(message +"vient ici");
+          return new ResponseTransfer(message);
 
 
     }

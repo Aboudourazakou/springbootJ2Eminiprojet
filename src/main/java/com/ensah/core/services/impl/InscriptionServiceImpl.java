@@ -32,12 +32,13 @@ public class InscriptionServiceImpl implements InscriptionService {
 
     List<Integer>niveauxPossiblesCp2= Arrays.asList(3,6,9,13,16,23,26);
     List<Integer>niveauxOptions=Arrays.asList(17,18,19,20,29);
+    List<Integer> validatedModule=new ArrayList<>();
 
     //A ces niveaux il faut valider,si non pas de niveaux suivants meme  pour les modules
     List<Integer>niveauxAvaliderAbsolument=Arrays.asList(12,7,5,11,15,17,18,19,20);
     //Annee actuelle
     int year=new  Date().getYear()+1900;
-     public static String message="";
+     public static String message="success";
 
     
 
@@ -45,9 +46,12 @@ public class InscriptionServiceImpl implements InscriptionService {
 
     @Override
     public String reinscrireEtudiant(Etudiant etudiant) {
+        validatedModule=new ArrayList<>();
+        message="success";
         int niveau= Math.toIntExact(etudiant.getIdNiveauTemporaire());
         System.out.println(etudiant.getIdNiveauTemporaire());
         Niveau niveau1= niveauDao.getById(etudiant.getIdNiveauTemporaire());
+
 
         System.out.println(niveau1);
         //Cette affectation est necessaire au cas ou l'utilisateur rafraichit la page
@@ -57,6 +61,13 @@ public class InscriptionServiceImpl implements InscriptionService {
         List<InscriptionAnnuelle>inscs=etu.getInscriptions();
         InscriptionAnnuelle derniereInscriptionAnnuelle=inscs.get(inscs.size()-1);
 
+        //On cherche les modules deja valides par l'etudiant
+
+        for(InscriptionModule inscM: derniereInscriptionAnnuelle.getInscriptionModules()){
+             if("oui".equals(inscM.getValidation())){
+                 validatedModule.add(Math.toIntExact(inscM.getModule().getIdModule()));
+             }
+        }
 
         //Si la derniere inscription a une date anterieure ,bref s'il s'est inscrit deja pour cette annee
         boolean bool=derniereInscriptionAnnuelle.getAnnee()<year;
@@ -118,6 +129,7 @@ public class InscriptionServiceImpl implements InscriptionService {
 
     @Override
     public void inscrireEtudiant(Etudiant etudiant){
+        validatedModule=new ArrayList<>();
         Utilisateur u=new Utilisateur();
         u.setCin(etudiant.getCin());
         u.setNomArabe(etudiant.getNomArabe());
@@ -126,7 +138,6 @@ public class InscriptionServiceImpl implements InscriptionService {
         u.setEmail(etudiant.getEmail());
         u.setIdUtilisateur(etudiant.getIdUtilisateur());
         Long idTemp=etudiant.getIdNiveauTemporaire();
-        System.out.println(idTemp+" est l'Id temporaire");
         //Utilisateur u2=utilisateurDao.save(u);
          etudiantServiceimpl.saveEtudiant(etudiant);
         etudiant=etudiantServiceimpl.getEtudiant(etudiant.getIdUtilisateur());
@@ -220,11 +231,17 @@ public class InscriptionServiceImpl implements InscriptionService {
 
             Set<InscriptionModule>inscM=new HashSet<>();
             for(Module m:niveau.getModules()){
-                InscriptionModule inscriptionModule=new InscriptionModule();
-                inscriptionModule.setModule(m);
+                //Si l'etudiant n'a pas encore valide ce module
+                System.out.println(etudiant.getPrenom());
 
-                inscriptionModule.setInscriptionAnnuelle(inscriptionAnnuelle);
-                inscM.add(inscriptionModule);
+                 if(!validatedModule.contains(Math.toIntExact(m.getIdModule()))){
+                     System.out.println(etudiant.getPrenom()+" ici toi");
+                     InscriptionModule inscriptionModule=new InscriptionModule();
+                     inscriptionModule.setModule(m);
+
+                     inscriptionModule.setInscriptionAnnuelle(inscriptionAnnuelle);
+                     inscM.add(inscriptionModule);
+                 }
             }
             inscriptionAnnuelle.setInscriptionModules(inscM);
         }
